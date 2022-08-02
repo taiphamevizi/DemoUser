@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Alert } from 'react-native'
+import auth from '@react-native-firebase/auth'
 import { DefaultButton } from '../../components/DefaultButton'
 import { Input } from '../../components/Input'
 import { Loader } from '../../components/Loader'
@@ -19,9 +20,24 @@ export function Login ({ navigation })  {
 
     function userLogin () {
         if(fieldEmail === '' || fieldPassword === '') {
-            Alert.alert('Atenção', 'Todos os campos são obrigatórios.')
+            Alert.alert('Error', 'All fields are required.')
         } else {
             setIsLoading(true)
+            auth().signInWithEmailAndPassword(fieldEmail, fieldPassword)
+            .then((res) => {
+                clearFields()
+                setIsLoading(false)
+                // navigation.navigate('ListUser')
+                navigation.reset({
+                    index: 0,
+                    routes: [{name: 'ListUser'}],
+                  });
+            })
+            .catch(error => {
+                setIsLoading(false)
+                // Alert.alert('Error', 'Incorrect data, please try again with other data.')
+                console.log('login error --->', error)
+            })
         }
     }
     
@@ -38,7 +54,7 @@ export function Login ({ navigation })  {
                 onChangeText={(val) => setFieldEmail(val)}
             />
             <Input
-                placeholder="Senha"
+                placeholder="Password"
                 value={fieldPassword}
                 onChangeText={(val) => setFieldPassword(val)}
                 secureTextEntry={true}
@@ -46,13 +62,13 @@ export function Login ({ navigation })  {
 
             <DefaultButton 
                 onPress={() => userLogin()}
-                label="Acessar"
+                label="Access"
             />
 
             <LinkToSignup
                 onPress={() => navigation.navigate('Signup')}
             >
-                Não possui uma conta ainda? Clique aqui para cadastrar.
+                Don't have an account yet? Click here to register.
             </LinkToSignup> 
         </DefaultContainer>
     )

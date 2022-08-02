@@ -1,31 +1,34 @@
-import React, { useState, useRef } from 'react'
-import { Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import firestore from '@react-native-firebase/firestore'
 import { Loader } from '../../components/Loader'
 import { User } from '../../components/User'
-import { View, TouchableOpacity } from 'react-native';
-import {Container, ScrollViewContainer} from './styles'
+import { TouchableOpacity } from 'react-native';
+import {ScrollViewContainer} from './styles'
+import { DefaultContainer } from '../../components/DefaultContainer'
+import { BottomButton } from '../../components/BottomButton'
+
+const qtdPerPage = 10
 
 export function ListUser ({ navigation })  {
 
-    const scrollViewRef = useRef<any>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [fieldEmail, setFieldEmail] = useState('')
     const [fieldPassword, setFieldPassword] = useState('')
+    const [limit, setLimit] = useState(qtdPerPage)
+    const [totalUsers, setTotalUsers] = useState(0)
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
     const [screenHeightWithoutScrollView, setScreenHeightWithoutScrollView] = useState(140)
-    const [names] = useState([
-        {'name': 'Ben', 'id': 1, 'address': 'United States Ben'},
-        {'name': 'Susan', 'id': 2, 'address': 'United States Susan'},
-        {'name': 'Robert', 'id': 3, 'address': 'United States Robert'},
-        {'name': 'Mary', 'id': 4, 'address': 'United States Mary'},
-        {'name': 'Daniel', 'id': 5, 'address': 'United States Daniel'},
-        {'name': 'Laura', 'id': 6, 'address': 'United States Laura'},
-        {'name': 'John', 'id': 7, 'address': 'United States John'},
-        {'name': 'Debra', 'id': 8, 'address': 'United States Debra'},
-        {'name': 'Aron', 'id': 9, 'address': 'United States Aron'},
-        {'name': 'Ann', 'id': 10, 'address': 'United States Ann'},
-        {'name': 'Steve', 'id': 11, 'address': 'United States Steve'},
-        {'name': 'Olivia', 'id': 12, 'address': 'United States Olivia'}
-    ])
+
+
+    const [users, setUsers] = useState([])
+
+    useEffect(() => {
+        getUsers()
+        setTimeout(() => {
+            setIsLoadingMore(false)
+        }, 1000)
+    }, [limit])
+
     
     if(isLoading){
         if(isLoading){
@@ -33,23 +36,62 @@ export function ListUser ({ navigation })  {
         }  
     } 
 
-    function alertItemName(item) {
-        // alert(item.name + "\n" + item.address)
-        console.log("item = " + item.name)
-        navigation.navigate('Login')
+    function onResult(querySnapshot) {
+        console.log('Got users collection result');
+        setUsers(querySnapshot.docs.reverse());
+      }
+      
+    function onError(error) {
+        console.error(error);
+    }
+
+    async function getUsers() {
+        firestore()
+                        .collection('users')
+                        .limit(limit)
+                        .onSnapshot(onResult, onError)
+        // const user = await firestore().collection('users').get().then(onResult, onError);
+
+        // get total user
+        firestore()
+                        .collection('users')
+                        .get()
+                        .then (querySnapshot => {
+                            setTotalUsers(querySnapshot.size)
+                            console.log('Total users => ' + querySnapshot.size);
+                        })
+    }
+
+    function itemClick(item) {
+        // alert(item._data.name + "\n" + item._data.address)
+        console.log("item = " + item._data.name)
+        navigation.navigate('UserDetails', {
+            itemId: item.id,
+            name: item._data.name,
+            address: item._data.address
+        })
+    }
+
+    function addNew() {
+        console.log("add new")
+        navigation.navigate('AddUser', {isEdit: false})
     }
 
     return (
-        <Container>
+        <DefaultContainer>
             <ScrollViewContainer 
                 screenHeightWithoutScrollView={screenHeightWithoutScrollView}
             >
                 {
-                names.map((item, index) => {
-                     return <TouchableOpacity key = {item.id} onPress = {() => alertItemName(item)}><User index = {index} name = {item.name} address = {item.address}/></TouchableOpacity>
+                users.map((item, index) => {
+                     return <TouchableOpacity key = {item.id} onPress = {() => itemClick(item)}><User index = {index} name = {item._data.name} address = {item._data.address}/></TouchableOpacity>
                 })
             }
-                </ScrollViewContainer>
-        </Container>
+            </ScrollViewContainer>
+            <BottomButton
+                onPress={() => addNew()}
+                label="Add New"
+            />
+        </DefaultContainer>
     )
 }

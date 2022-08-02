@@ -5,6 +5,8 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { ListUser }  from './pages/ListUser'
 import { Login }  from './pages/Login'
 import { Signup } from './pages/Signup'
+import { UserDetails } from './pages/UserDetails'
+import { AddUser } from './pages/AddUser'
 
 
 const Stack = createStackNavigator()
@@ -12,7 +14,7 @@ const Stack = createStackNavigator()
 export function RootStack() {
   return (
     <Stack.Navigator
-      initialRouteName="ListUser"
+      initialRouteName="Login"
       screenOptions={{
         headerTitleAlign: 'center',
         headerStyle: {
@@ -25,6 +27,13 @@ export function RootStack() {
       }}
     >
       <Stack.Screen 
+        name="Login" 
+        component={Login} 
+        options={
+          {title: 'Login'}
+        }
+      />
+      <Stack.Screen 
         name="ListUser" 
         component={ListUser} 
         options={{ title: 'User Management' }}
@@ -32,14 +41,17 @@ export function RootStack() {
       <Stack.Screen 
         name="Signup" 
         component={Signup} 
-        options={{ title: 'Cadastro' }}
-      />       
+        options={{ title: 'Register' }}
+      />
       <Stack.Screen 
-        name="Login" 
-        component={Login} 
-        options={
-          {title: 'Acesso'}
-        }
+        name="UserDetails" 
+        component={UserDetails} 
+        options={{ title: 'User Details' }}
+      />
+      <Stack.Screen 
+        name="AddUser" 
+        component={AddUser} 
+        options={{ title: 'Add User' }}
       />
     </Stack.Navigator>
   );

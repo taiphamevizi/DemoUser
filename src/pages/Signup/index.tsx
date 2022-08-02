@@ -5,6 +5,7 @@ import { DefaultContainer } from '../../components/DefaultContainer'
 import { Loader } from '../../components/Loader'
 import { Input } from '../../components/Input'
 import { DefaultButton } from '../../components/DefaultButton'
+import auth from '@react-native-firebase/auth'
 
 export function Signup ({ navigation }) {
 
@@ -21,9 +22,41 @@ export function Signup ({ navigation }) {
 
     function registerUser () {
         if(fieldName === '' || fieldEmail === '' || fieldPassword === '') {
-          Alert.alert('Atenção', 'Todos os campos são obrigtórios.')
+          Alert.alert('Error', 'All fields are required.')
         } else {
             setIsLoading(true)
+            auth()
+                .createUserWithEmailAndPassword(fieldEmail, fieldPassword)
+                .then((res) => {
+                    res.user.updateProfile({
+                        displayName: fieldName
+                    })
+                    setIsLoading(false)
+                    clearFields()
+                    Alert.alert('Success', 'Account has been created successfully, please login.')
+                    navigation.navigate('Login')
+                })
+            .catch(error => {
+                setIsLoading(false)
+                if (error.code === 'auth/email-already-in-use') {
+                    Alert.alert('Error', 'This email is already in use.')
+                    return
+                }
+
+                if (error.code === 'auth/invalid-email') {
+                    Alert.alert('Error', 'This email is invalid.')
+                    return
+                }
+
+                if (error.code === 'auth/weak-password') {
+                    Alert.alert('Error', 'Your password must have a minimum of 6 characters.')
+                    return
+                }
+
+                Alert.alert('Error', 'An unmapped error has occurred, please check your internet connection or change your registration details.')
+
+                console.error(error)
+            })
         }
     }
 
@@ -34,7 +67,7 @@ export function Signup ({ navigation }) {
     return (
         <DefaultContainer>
             <Input
-                placeholder="Nome"
+                placeholder="Name"
                 value={fieldName}
                 onChangeText={(val) => setFieldName(val)}
             />      
@@ -44,7 +77,7 @@ export function Signup ({ navigation }) {
                 onChangeText={(val) => setFieldEmail(val)}
             />
             <Input
-                placeholder="Senha"
+                placeholder="Password"
                 value={fieldPassword}
                 onChangeText={(val) => setFieldPassword(val)}
                 secureTextEntry={true}
@@ -52,13 +85,13 @@ export function Signup ({ navigation }) {
 
             <DefaultButton 
                 onPress={() => registerUser()}
-                label="Cadastrar"
+                label="Register"
             />
 
             <LinkToLogin 
                 onPress={() => navigation.navigate('Login')}
             >
-                Já é registrado? Clique aqui para fazer o login.
+                Already registered? Click here to login.
             </LinkToLogin>              
         </DefaultContainer>
     
