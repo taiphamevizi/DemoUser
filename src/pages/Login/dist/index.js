@@ -28,7 +28,6 @@ function Login(_a) {
                 .then(function (res) {
                 clearFields();
                 setIsLoading(false);
-                // navigation.navigate('ListUser')
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'ListUser' }]

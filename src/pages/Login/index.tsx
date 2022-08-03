@@ -27,7 +27,6 @@ export function Login ({ navigation })  {
             .then((res) => {
                 clearFields()
                 setIsLoading(false)
-                // navigation.navigate('ListUser')
                 navigation.reset({
                     index: 0,
                     routes: [{name: 'ListUser'}],
